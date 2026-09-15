@@ -1,36 +1,145 @@
+"""Example: Professional Telegram Sender Module.
+
+Demonstrates sending text, image, and document messages using Wtelegram and WAuth vault credentials.
+"""
+
 import os
+from typing import Optional, Union
 
 from wauth import WAuth
 
 from wconnect import WFile, Wtelegram
 
-USER_ID = "6586101740"  # Reemplaza con tu ID de usuario de Telegram
+# Configuration constants
+DB_PATH = "./my_secrets.db"
+DEFAULT_CHAT_ID = "6586101740"
 
-with Wtelegram(auth_instance=WAuth(db_path="./my_secrets.db")) as producer:
-    ok = producer.send(to=USER_ID, message="✅ Operación completada con éxito")
-    print(
-        f"Envío de mensaje: {'Éxito' if ok else 'Fallido (verifique token y USER_ID)'}"
-    )
 
-    # Enviar desde una ruta local (si existe el archivo)
-    if os.path.exists("./reports/graph.png"):
-        producer.send_image(
-            to=USER_ID, path="./reports/graph.png", caption="Gráfico de ClickHouse"
+def send_text_notification(
+    producer: Wtelegram,
+    chat_id: Union[int, str],
+    message: str,
+) -> bool:
+    """Send a text notification to a Telegram user/chat.
+
+    Args:
+        producer: Initialized Wtelegram bot instance.
+        chat_id: Target user or chat ID.
+        message: Content of the text message to send.
+
+    Returns:
+        bool: True if the message was delivered successfully, False otherwise.
+    """
+    success = producer.send(to=chat_id, message=message)
+    if success:
+        print(f"[SUCCESS] Text message delivered to {chat_id}")
+    else:
+        print(f"[ERROR] Failed to deliver text message to {chat_id}")
+    return success
+
+
+def send_image_report(
+    producer: Wtelegram,
+    chat_id: Union[int, str],
+    image_path: Optional[str] = None,
+    image_url: Optional[str] = None,
+    caption: Optional[str] = None,
+) -> bool:
+    """Send an image report from a local file path or public URL.
+
+    Args:
+        producer: Initialized Wtelegram bot instance.
+        chat_id: Target user or chat ID.
+        image_path: Optional local path to an image file.
+        image_url: Optional public URL of an image.
+        caption: Optional descriptive caption for the image.
+
+    Returns:
+        bool: True if the image was sent successfully, False otherwise.
+    """
+    if image_path and os.path.exists(image_path):
+        success = producer.send_image(to=chat_id, path=image_path, caption=caption)
+    elif image_url:
+        success = producer.send_image(to=chat_id, url=image_url, caption=caption)
+    else:
+        print(
+            "[WARNING] Neither a valid local image_path nor an image_url was provided."
+        )
+        return False
+
+    if success:
+        print(f"[SUCCESS] Image sent to {chat_id}")
+    else:
+        print(f"[ERROR] Failed to send image to {chat_id}")
+    return success
+
+
+def send_document_file(
+    producer: Wtelegram,
+    chat_id: Union[int, str],
+    file_path: Optional[str] = None,
+    wfile: Optional[WFile] = None,
+    caption: Optional[str] = None,
+) -> bool:
+    """Send a document file (local path or WFile in-memory object).
+
+    Args:
+        producer: Initialized Wtelegram bot instance.
+        chat_id: Target user or chat ID.
+        file_path: Optional local path to a document file.
+        wfile: Optional WFile in-memory file instance.
+        caption: Optional descriptive caption for the document.
+
+    Returns:
+        bool: True if the document was sent successfully, False otherwise.
+    """
+    if wfile is not None:
+        success = producer.send_document(to=chat_id, file=wfile, caption=caption)
+    elif file_path and os.path.exists(file_path):
+        success = producer.send_document(to=chat_id, path=file_path, caption=caption)
+    else:
+        print(
+            "[WARNING] Neither a valid local file_path nor a WFile object was provided."
+        )
+        return False
+
+    if success:
+        print(f"[SUCCESS] Document sent to {chat_id}")
+    else:
+        print(f"[ERROR] Failed to send document to {chat_id}")
+    return success
+
+
+def main() -> None:
+    """Execute the professional sender workflow."""
+    vault = WAuth(db_path=DB_PATH)
+
+    with Wtelegram(auth_instance=vault) as producer:
+        print("=== Sending Text Message ===")
+        send_text_notification(
+            producer=producer,
+            chat_id=DEFAULT_CHAT_ID,
+            message="✅ Operation completed successfully.",
         )
 
-    # Enviar desde una URL
-    ok_img = producer.send_image(to=USER_ID, url="https://httpbin.org/image/png")
-    print(f"Envío de imagen: {'Éxito' if ok_img else 'Fallido'}")
-
-    # Enviar un reporte generado (si existe el archivo)
-    if os.path.exists("./exports/data_lts.zip"):
-        producer.send_document(
-            to=USER_ID,
-            path="./exports/data_lts.zip",
-            caption="📦 Aquí tienes el backup solicitado",
+        print("\n=== Sending Image ===")
+        send_image_report(
+            producer=producer,
+            chat_id=DEFAULT_CHAT_ID,
+            image_url="https://httpbin.org/image/png",
+            caption="Sample analytics chart",
         )
 
-    data_bytes = b"col1,col2\nval1,val2\nval3,val4"
-    my_file = WFile(content=data_bytes, name="report.csv")
-    ok_doc = producer.send_document(to=USER_ID, file=my_file)
-    print(f"Envío de documento: {'Éxito' if ok_doc else 'Fallido'}")
+        print("\n=== Sending Document ===")
+        report_data = b"timestamp,status,count\n2026-09-15,OK,100"
+        csv_file = WFile(content=report_data, name="daily_summary.csv")
+        send_document_file(
+            producer=producer,
+            chat_id=DEFAULT_CHAT_ID,
+            wfile=csv_file,
+            caption="📊 Daily summary export",
+        )
+
+
+if __name__ == "__main__":
+    main()
