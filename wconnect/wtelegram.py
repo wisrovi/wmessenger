@@ -24,7 +24,9 @@ from .wmessage import WMessage
 class Wtelegram:
     """Telegram bot wrapper with simple decorators for commands and messages."""
 
-    def __init__(self, token: Optional[str] = None, auth_instance: Optional[Any] = None):
+    def __init__(
+        self, token: Optional[str] = None, auth_instance: Optional[Any] = None
+    ):
         """
         Initialize Wtelegram.
 
@@ -47,6 +49,15 @@ class Wtelegram:
         self._command_handlers: Dict[str, Callable] = {}
         self._message_handlers: List[dict] = []
         self._running = False
+
+    def __enter__(self) -> "Wtelegram":
+        """Support context manager protocol."""
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        """Clean up on context manager exit."""
+        if self._running:
+            self.stop_bot()
 
     def _resolve_token(self) -> Optional[str]:
         """Try to resolve bot token from auth_instance."""
@@ -195,7 +206,9 @@ class Wtelegram:
         resp = requests.post(url, json=data, timeout=30)
         return resp.status_code == 200
 
-    def send_photo(self, to: Union[int, str], photo: Any, caption: Optional[str] = None) -> bool:
+    def send_photo(
+        self, to: Union[int, str], photo: Any, caption: Optional[str] = None
+    ) -> bool:
         """Send a photo to a chat/user.
 
         Args:
@@ -296,7 +309,9 @@ class Wtelegram:
             handler_func = handler_info["func"]
 
             if value_type == "text":
-                app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handler_func))
+                app.add_handler(
+                    MessageHandler(filters.TEXT & ~filters.COMMAND, handler_func)
+                )
             elif value_type == "image":
                 app.add_handler(
                     MessageHandler(
