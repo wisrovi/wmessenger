@@ -186,6 +186,10 @@ class Wtelegram:
 
         return decorator
 
+    # Aliases for ecosystem consistency across w_libraries (wkafka, wredis, wmessenger)
+    on_command = command
+    on_message = consumer
+
     # ----------------------------------------------------------------
     # Sending methods
     # ----------------------------------------------------------------
