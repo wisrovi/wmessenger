@@ -1,5 +1,6 @@
 """WMessage: Wrapper for incoming telegram messages."""
 
+import os
 from typing import Optional
 
 from .wfile import WFile
@@ -21,6 +22,7 @@ class WMessage:
         message_id: Optional[int] = None,
         is_command: bool = False,
         command: Optional[str] = None,
+        saved_path: Optional[str] = None,
     ):
         self._chat_id = chat_id
         self._user_id = user_id
@@ -33,6 +35,7 @@ class WMessage:
         self._message_id = message_id
         self._is_command = is_command
         self._command = command
+        self._saved_path = saved_path
 
     @property
     def chat_id(self) -> int:
@@ -76,8 +79,18 @@ class WMessage:
     def command(self) -> Optional[str]:
         return self._command
 
+    @property
+    def saved_path(self) -> Optional[str]:
+        return self._saved_path
+
+    @saved_path.setter
+    def saved_path(self, value: Optional[str]) -> None:
+        self._saved_path = value
+
     @classmethod
-    def from_telegram_update(cls, update, bot=None) -> "WMessage":
+    def from_telegram_update(
+        cls, update, bot=None, auto_save_in: Optional[str] = None
+    ) -> "WMessage":
         """Create a WMessage from a telegram Update object."""
         msg = update.effective_message
         user = update.effective_user
@@ -146,6 +159,13 @@ class WMessage:
                 bot_token=bot_token,
             )
 
+        # Handle auto-saving if auto_save_in path is provided
+        saved_path = None
+        if auto_save_in and file and file.file_id:
+            os.makedirs(auto_save_in, exist_ok=True)
+            target_path = os.path.join(auto_save_in, file.name)
+            saved_path = file.save(target_path)
+
         # Detect commands
         is_command = False
         command = None
@@ -166,6 +186,7 @@ class WMessage:
             message_id=message_id,
             is_command=is_command,
             command=command,
+            saved_path=saved_path,
         )
 
     def __repr__(self) -> str:
