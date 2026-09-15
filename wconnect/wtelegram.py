@@ -25,17 +25,21 @@ class Wtelegram:
     """Telegram bot wrapper with simple decorators for commands and messages."""
 
     def __init__(
-        self, token: Optional[str] = None, auth_instance: Optional[Any] = None
+        self,
+        token: Optional[str] = None,
+        auth_instance: Optional[Any] = None,
+        auto_save_in: Optional[str] = None,
     ):
-        """
-        Initialize Wtelegram.
+        """Initialize Wtelegram.
 
         Args:
             token: Telegram bot token directly. If not provided, tries to get from auth_instance.
             auth_instance: A WAuth instance or any object with token storage.
+            auto_save_in: Optional directory path to automatically save incoming attachments.
         """
         self._token = token
         self._auth_instance = auth_instance
+        self._auto_save_in = auto_save_in
 
         # Try to get token from auth_instance
         if self._token is None and self._auth_instance is not None:
@@ -114,7 +118,9 @@ class Wtelegram:
         def decorator(func: Callable):
             @wraps(func)
             async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
-                wmsg = WMessage.from_telegram_update(update, context.bot)
+                wmsg = WMessage.from_telegram_update(
+                    update, context.bot, auto_save_in=self._auto_save_in
+                )
                 # Only handle if it's actually this command
                 if wmsg.is_command and wmsg.command == command:
                     if inspect.iscoroutinefunction(func):
@@ -153,7 +159,9 @@ class Wtelegram:
         def decorator(func: Callable):
             @wraps(func)
             async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
-                wmsg = WMessage.from_telegram_update(update, context.bot)
+                wmsg = WMessage.from_telegram_update(
+                    update, context.bot, auto_save_in=self._auto_save_in
+                )
 
                 # Check from_user filter
                 if from_user is not None:
