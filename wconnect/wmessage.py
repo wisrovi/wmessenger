@@ -89,6 +89,7 @@ class WMessage:
         last_name = user.last_name if user else None
         text = msg.text or msg.caption or ""
         message_id = msg.message_id
+        bot_token = bot.token if bot else None
 
         # Detect value type and build file
         value_type = "text"
@@ -102,6 +103,7 @@ class WMessage:
                 name=f"photo_{message_id}.jpg",
                 file_size=photo.file_size,
                 mime_type="image/jpeg",
+                bot_token=bot_token,
             )
         elif msg.document:
             value_type = "document"
@@ -111,6 +113,7 @@ class WMessage:
                 name=doc.file_name or "document",
                 file_size=doc.file_size,
                 mime_type=doc.mime_type,
+                bot_token=bot_token,
             )
         elif msg.video:
             value_type = "image"
@@ -120,6 +123,7 @@ class WMessage:
                 name=f"video_{message_id}.mp4",
                 file_size=video.file_size,
                 mime_type=video.mime_type,
+                bot_token=bot_token,
             )
         elif msg.audio:
             value_type = "document"
@@ -129,6 +133,7 @@ class WMessage:
                 name=audio.file_name or audio.title or "audio",
                 file_size=audio.file_size,
                 mime_type=audio.mime_type,
+                bot_token=bot_token,
             )
         elif msg.voice:
             value_type = "document"
@@ -138,6 +143,7 @@ class WMessage:
                 name=f"voice_{message_id}.ogg",
                 file_size=voice.file_size,
                 mime_type="audio/ogg",
+                bot_token=bot_token,
             )
 
         # Detect commands
