@@ -18,19 +18,17 @@ DEFAULT_CHAT_ID = "6586101740"
 def send_text_notification(
     chat_id: Union[int, str],
     message: str,
-    db_path: str = DB_PATH,
 ) -> bool:
     """Send a text notification to a Telegram user/chat using vault credentials.
 
     Args:
         chat_id: Target user or chat ID.
         message: Content of the text message to send.
-        db_path: Path to the WAuth vault database.
 
     Returns:
         bool: True if the message was delivered successfully, False otherwise.
     """
-    vault = WAuth(db_path=db_path)
+    vault = WAuth(db_path=DB_PATH)
     with Wtelegram(auth_instance=vault) as producer:
         success = producer.send(to=chat_id, message=message)
         if success:
@@ -42,33 +40,27 @@ def send_text_notification(
 
 def send_image_report(
     chat_id: Union[int, str],
-    image_path: Optional[str] = None,
-    image_url: Optional[str] = None,
+    image: str,
     caption: Optional[str] = None,
-    db_path: str = DB_PATH,
 ) -> bool:
-    """Send an image report from a local file path or public URL using vault credentials.
+    """Send an image report automatically detecting whether 'image' is a URL or local file path.
 
     Args:
         chat_id: Target user or chat ID.
-        image_path: Optional local path to an image file.
-        image_url: Optional public URL of an image.
+        image: Local file path or public image URL.
         caption: Optional descriptive caption for the image.
-        db_path: Path to the WAuth vault database.
 
     Returns:
         bool: True if the image was sent successfully, False otherwise.
     """
-    vault = WAuth(db_path=db_path)
+    vault = WAuth(db_path=DB_PATH)
     with Wtelegram(auth_instance=vault) as producer:
-        if image_path and os.path.exists(image_path):
-            success = producer.send_image(to=chat_id, path=image_path, caption=caption)
-        elif image_url:
-            success = producer.send_image(to=chat_id, url=image_url, caption=caption)
+        if image.startswith(("http://", "https://")):
+            success = producer.send_image(to=chat_id, url=image, caption=caption)
+        elif os.path.exists(image):
+            success = producer.send_image(to=chat_id, path=image, caption=caption)
         else:
-            print(
-                "[WARNING] Neither a valid local image_path nor an image_url was provided."
-            )
+            print(f"[WARNING] Image path '{image}' does not exist locally.")
             return False
 
         if success:
@@ -80,35 +72,27 @@ def send_image_report(
 
 def send_document_file(
     chat_id: Union[int, str],
-    file_path: Optional[str] = None,
-    wfile: Optional[WFile] = None,
+    file: Union[str, WFile],
     caption: Optional[str] = None,
-    db_path: str = DB_PATH,
 ) -> bool:
-    """Send a document file (local path or WFile in-memory object) using vault credentials.
+    """Send a document file automatically handling local file path or WFile in-memory object.
 
     Args:
         chat_id: Target user or chat ID.
-        file_path: Optional local path to a document file.
-        wfile: Optional WFile in-memory file instance.
+        file: Local file path or WFile object.
         caption: Optional descriptive caption for the document.
-        db_path: Path to the WAuth vault database.
 
     Returns:
         bool: True if the document was sent successfully, False otherwise.
     """
-    vault = WAuth(db_path=db_path)
+    vault = WAuth(db_path=DB_PATH)
     with Wtelegram(auth_instance=vault) as producer:
-        if wfile is not None:
-            success = producer.send_document(to=chat_id, file=wfile, caption=caption)
-        elif file_path and os.path.exists(file_path):
-            success = producer.send_document(
-                to=chat_id, path=file_path, caption=caption
-            )
+        if isinstance(file, WFile):
+            success = producer.send_document(to=chat_id, file=file, caption=caption)
+        elif isinstance(file, str) and os.path.exists(file):
+            success = producer.send_document(to=chat_id, path=file, caption=caption)
         else:
-            print(
-                "[WARNING] Neither a valid local file_path nor a WFile object was provided."
-            )
+            print(f"[WARNING] Document file '{file}' does not exist.")
             return False
 
         if success:
@@ -129,7 +113,7 @@ def main() -> None:
     print("\n=== Sending Image ===")
     send_image_report(
         chat_id=DEFAULT_CHAT_ID,
-        image_url="https://httpbin.org/image/png",
+        image="https://httpbin.org/image/png",
         caption="Sample analytics chart",
     )
 
@@ -138,7 +122,7 @@ def main() -> None:
     csv_file = WFile(content=report_data, name="daily_summary.csv")
     send_document_file(
         chat_id=DEFAULT_CHAT_ID,
-        wfile=csv_file,
+        file=csv_file,
         caption="📊 Daily summary export",
     )
 
