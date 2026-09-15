@@ -5,7 +5,7 @@ import inspect
 import os
 import threading
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 import requests
 from telegram import Update
@@ -46,8 +46,8 @@ class Wtelegram:
             self._token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 
         self._application: Optional[Application] = None
-        self._command_handlers: Dict[str, Callable] = {}
-        self._message_handlers: List[dict] = []
+        self._command_handlers: dict[str, Callable] = {}
+        self._message_handlers: list[dict] = []
         self._running = False
 
     def __enter__(self) -> "Wtelegram":
@@ -217,7 +217,7 @@ class Wtelegram:
             caption: Optional caption
         """
         url = f"https://api.telegram.org/bot{self._token}/sendPhoto"
-        data: Dict[str, Any] = {"chat_id": to}
+        data: dict[str, Any] = {"chat_id": to}
         if caption:
             data["caption"] = caption
 
@@ -271,14 +271,12 @@ class Wtelegram:
             caption: Optional caption
         """
         url = f"https://api.telegram.org/bot{self._token}/sendDocument"
-        data: Dict[str, Any] = {"chat_id": to}
+        data: dict[str, Any] = {"chat_id": to}
         if caption:
             data["caption"] = caption
 
         if file is not None:
             # Send from WFile object
-            with requests.post(url, data=data, timeout=30) as resp_init:
-                pass
             files = {"document": (file.name, file.content)}
             resp = requests.post(url, data=data, files=files, timeout=30)
         elif path:
