@@ -19,7 +19,7 @@ with Wtelegram(auth_instance=WAuth(db_path="./my_secrets.db")) as producer:
         )
 
     # Enviar desde una URL
-    ok_img = producer.send_image(to=USER_ID, url="https://wisrovi.dev/logo.png")
+    ok_img = producer.send_image(to=USER_ID, url="https://httpbin.org/image/png")
     print(f"Envío de imagen: {'Éxito' if ok_img else 'Fallido'}")
 
     # Enviar un reporte generado (si existe el archivo)
