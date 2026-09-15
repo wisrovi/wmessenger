@@ -5,7 +5,10 @@ from wauth import WAuth
 from wconnect import WFile, Wtelegram
 
 with Wtelegram(auth_instance=WAuth(db_path="./my_secrets.db")) as producer:
-    producer.send(to="USER_ID", message="✅ Operación completada con éxito")
+    ok = producer.send(to="USER_ID", message="✅ Operación completada con éxito")
+    print(
+        f"Envío de mensaje: {'Éxito' if ok else 'Fallido (verifique token y USER_ID)'}"
+    )
 
     # Enviar desde una ruta local (si existe el archivo)
     if os.path.exists("./reports/graph.png"):
@@ -14,7 +17,8 @@ with Wtelegram(auth_instance=WAuth(db_path="./my_secrets.db")) as producer:
         )
 
     # Enviar desde una URL
-    producer.send_image(to="USER_ID", url="https://wisrovi.dev/logo.png")
+    ok_img = producer.send_image(to="USER_ID", url="https://wisrovi.dev/logo.png")
+    print(f"Envío de imagen: {'Éxito' if ok_img else 'Fallido'}")
 
     # Enviar un reporte generado (si existe el archivo)
     if os.path.exists("./exports/data_lts.zip"):
@@ -26,4 +30,5 @@ with Wtelegram(auth_instance=WAuth(db_path="./my_secrets.db")) as producer:
 
     data_bytes = b"col1,col2\nval1,val2\nval3,val4"
     my_file = WFile(content=data_bytes, name="report.csv")
-    producer.send_document(to="USER_ID", file=my_file)
+    ok_doc = producer.send_document(to="USER_ID", file=my_file)
+    print(f"Envío de documento: {'Éxito' if ok_doc else 'Fallido'}")
