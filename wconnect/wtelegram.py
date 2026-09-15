@@ -340,6 +340,21 @@ class Wtelegram:
         else:
             app.run_webhook()
 
+    def run_consumers(self, block: bool = True, polling: bool = True) -> Any:
+        """Start listening for incoming messages/commands (ecosystem consistency method).
+
+        Args:
+            block: If True (default), block the main thread. If False, run asynchronously in background thread.
+            polling: If True (default), use polling. If False, use webhook.
+
+        Returns:
+            None if block=True, or Thread instance if block=False.
+        """
+        if block:
+            return self.run_bot(polling=polling)
+        else:
+            return self.run_async(polling=polling)
+
     def run_async(self, polling: bool = True):
         """Run the bot in a background thread (non-blocking)."""
 
@@ -363,6 +378,8 @@ class Wtelegram:
             asyncio.set_event_loop(loop)
             loop.run_until_complete(self._application.stop())
             self._running = False
+
+    stop_consumers = stop_bot
 
     @property
     def is_running(self) -> bool:
