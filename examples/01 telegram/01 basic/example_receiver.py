@@ -33,7 +33,7 @@ vault = WAuth(db_path=DB_PATH)
 authorized_users = get_authorized_users(vault)
 print(f"[CONFIG] Loaded {len(authorized_users)} authorized user(s) from vault.")
 
-bot = Wtelegram(auth_instance=vault)
+bot = Wtelegram(auth_instance=vault, auto_save_in=DOWNLOADS_DIR)
 
 
 # 1. Command handler: /status
@@ -58,7 +58,7 @@ def handle_text_messages(message: WMessage) -> None:
 # 3. Image message consumer
 @bot.consumer(value_type="image")
 def handle_image_messages(message: WMessage) -> None:
-    """Handle incoming image attachments and save them locally."""
+    """Handle incoming image attachments (automatically saved via auto_save_in)."""
     if authorized_users and message.user_id not in authorized_users:
         print(f"[UNAUTHORIZED IMAGE] Access denied for User ID: {message.user_id}")
         bot.send(
@@ -68,34 +68,29 @@ def handle_image_messages(message: WMessage) -> None:
         return
 
     print(f"[IMAGE RECEIVED] From {message.username} ({message.file.name})")
-
-    saved_path = message.file.save(os.path.join(DOWNLOADS_DIR, message.file.name))
-    print(f"[IMAGE SAVED] Location: {saved_path}")
+    print(f"[IMAGE AUTO-SAVED] Location: {message.saved_path}")
     bot.send(
         to=message.chat_id,
-        message=f"📷 Image '{message.file.name}' received and saved successfully.",
+        message=f"📷 Image '{message.file.name}' saved to '{message.saved_path}'.",
     )
 
 
 # 4. Document message consumer
 @bot.consumer(value_type="document")
 def handle_document_messages(message: WMessage) -> None:
-    """Handle incoming document files (CSVs, PDFs, ZIPs) and save them locally."""
+    """Handle incoming document files (automatically saved via auto_save_in)."""
     file_bytes = message.file.content
     print(
         f"[DOCUMENT RECEIVED] Name: {message.file.name}, Size: {len(file_bytes)} bytes"
     )
-
-    os.makedirs(DOWNLOADS_DIR, exist_ok=True)
-    saved_path = message.file.save(os.path.join(DOWNLOADS_DIR, message.file.name))
-    print(f"[DOCUMENT SAVED] Location: {saved_path}")
+    print(f"[DOCUMENT AUTO-SAVED] Location: {message.saved_path}")
 
     if message.file.name.endswith(".csv"):
         print("[CSV PROCESSING] Parsing in-memory CSV dataset...")
 
     bot.send(
         to=message.chat_id,
-        message=f"📄 Document '{message.file.name}' ({len(file_bytes)} bytes) received and saved to '{saved_path}'.",
+        message=f"📄 Document '{message.file.name}' ({len(file_bytes)} bytes) saved to '{message.saved_path}'.",
     )
 
 
