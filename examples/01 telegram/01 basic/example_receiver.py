@@ -26,6 +26,7 @@ def get_authorized_users(vault: WAuth) -> list[str]:
 # Configuration constants
 DB_PATH = "./my_secrets.db"
 DOWNLOADS_DIR = "./downloads"
+os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
 
 vault = WAuth(db_path=DB_PATH)
@@ -67,7 +68,7 @@ def handle_image_messages(message: WMessage) -> None:
         return
 
     print(f"[IMAGE RECEIVED] From {message.username} ({message.file.name})")
-    os.makedirs(DOWNLOADS_DIR, exist_ok=True)
+
     saved_path = message.file.save(os.path.join(DOWNLOADS_DIR, message.file.name))
     print(f"[IMAGE SAVED] Location: {saved_path}")
     bot.send(
@@ -79,18 +80,22 @@ def handle_image_messages(message: WMessage) -> None:
 # 4. Document message consumer
 @bot.consumer(value_type="document")
 def handle_document_messages(message: WMessage) -> None:
-    """Handle incoming document files (CSVs, PDFs, ZIPs) with in-memory inspection."""
+    """Handle incoming document files (CSVs, PDFs, ZIPs) and save them locally."""
     file_bytes = message.file.content
     print(
         f"[DOCUMENT RECEIVED] Name: {message.file.name}, Size: {len(file_bytes)} bytes"
     )
+
+    os.makedirs(DOWNLOADS_DIR, exist_ok=True)
+    saved_path = message.file.save(os.path.join(DOWNLOADS_DIR, message.file.name))
+    print(f"[DOCUMENT SAVED] Location: {saved_path}")
 
     if message.file.name.endswith(".csv"):
         print("[CSV PROCESSING] Parsing in-memory CSV dataset...")
 
     bot.send(
         to=message.chat_id,
-        message=f"📄 Document '{message.file.name}' ({len(file_bytes)} bytes) processed.",
+        message=f"📄 Document '{message.file.name}' ({len(file_bytes)} bytes) received and saved to '{saved_path}'.",
     )
 
 
