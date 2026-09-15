@@ -66,7 +66,7 @@ Changelog = "https://github.com/wisrovi/wconnect/blob/main/CHANGELOG.md"
 [tool.hatch.build.targets.sdist]
 include = [
     "/wconnect",
-    "/examples/01 telegram/01 basic",
+    "/examples",
     "/test",
 ]
 exclude = [
