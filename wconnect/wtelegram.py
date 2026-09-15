@@ -317,12 +317,17 @@ class Wtelegram:
             elif value_type == "image":
                 app.add_handler(
                     MessageHandler(
-                        filters.PHOTO | filters.Document.ALL,
+                        filters.PHOTO | filters.VIDEO | filters.Document.IMAGE,
                         handler_func,
                     )
                 )
             elif value_type == "document":
-                app.add_handler(MessageHandler(filters.Document.ALL, handler_func))
+                app.add_handler(
+                    MessageHandler(
+                        filters.Document.ALL | filters.AUDIO | filters.VOICE,
+                        handler_func,
+                    )
+                )
             else:
                 app.add_handler(MessageHandler(filters.ALL, handler_func))
 
