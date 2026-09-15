@@ -1,7 +1,9 @@
 """WFile: File handling for telegram messages."""
 
 import os
-from typing import Optional, Union
+from typing import Optional
+
+import requests
 
 
 class WFile:
@@ -16,6 +18,7 @@ class WFile:
         file_url: Optional[str] = None,
         file_size: Optional[int] = None,
         mime_type: Optional[str] = None,
+        bot_token: Optional[str] = None,
     ):
         self._content = content
         self._name = name or "unknown"
@@ -24,6 +27,7 @@ class WFile:
         self._file_url = file_url
         self._file_size = file_size
         self._mime_type = mime_type
+        self._bot_token = bot_token
 
     @property
     def content(self) -> bytes:
@@ -35,6 +39,25 @@ class WFile:
             with open(self._file_path, "rb") as f:
                 self._content = f.read()
             return self._content
+        # If we have a Telegram file_id and bot_token, download from Telegram API
+        if self._file_id and self._bot_token:
+            get_file_url = f"https://api.telegram.org/bot{self._bot_token}/getFile?file_id={self._file_id}"
+            resp = requests.get(get_file_url, timeout=30)
+            if resp.status_code == 200:
+                res = resp.json()
+                if res.get("ok"):
+                    remote_file_path = res["result"]["file_path"]
+                    download_url = f"https://api.telegram.org/file/bot{self._bot_token}/{remote_file_path}"
+                    down_resp = requests.get(download_url, timeout=60)
+                    if down_resp.status_code == 200:
+                        self._content = down_resp.content
+                        return self._content
+        # If we have a file_url, download via HTTP GET
+        if self._file_url and self._file_url.startswith(("http://", "https://")):
+            resp = requests.get(self._file_url, timeout=60)
+            if resp.status_code == 200:
+                self._content = resp.content
+                return self._content
         return b""
 
     @property
