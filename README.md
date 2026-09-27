@@ -1,4 +1,13 @@
-# wconnect (wmessenger)
+<p align="center">
+  <a href="https://pypi.org/project/wconnect/"><img src="https://img.shields.io/pypi/v/wconnect?style=for-the-badge&logo=pypi&color=3b82f6" alt="PyPI version" /></a>
+  <a href="https://pypi.org/project/wconnect/"><img src="https://img.shields.io/pypi/pyversions/wconnect.svg?style=for-the-badge&logo=python&color=3775A9" alt="Python versions" /></a>
+  <a href="https://linkedin.com/in/wisrovi-rodriguez"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
+  <a href="https://wisrovi.dev"><img src="https://img.shields.io/badge/Author-wisrovi.dev-111827?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Portal" /></a>
+  <a href="https://orcid.org/0009-0005-0710-1861"><img src="https://img.shields.io/badge/ORCID-0009--0005--0710--1861-A6CE39?style=for-the-badge&logo=orcid&logoColor=white" alt="ORCID" /></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License" /></a>
+</p>
+
+# 💬 WConnect (WMessenger) — Telegram Bots & Messaging Made Effortless
 
 `wconnect` (`wmessenger`) es una librería en Python diseñada para simplificar la creación de bots e integración con plataformas de mensajería (Telegram). Ofrece abstracciones orientadas a objetos, soporte para el protocolo Context Manager (`with`), descarga automática de archivos adjuntos (`auto_save_in`), y decoradores intuitivos compatibles con la convención de `wkafka` y `wredis`.
 
@@ -126,4 +135,18 @@ Puedes consultar ejemplos listos para ejecutar en la carpeta `examples/01 telegr
 ---
 
 ## 📄 Licencia
-MIT License - Copyright (c) 2025 William Rodriguez
+
+MIT License
+
+---
+
+## 👤 Autor & Afiliación Oficial
+
+* **William Steve Rodriguez Villamizar (Wisrovi)**
+* **Cargo:** Principal AI Engineer & Applied AI Solutions Architect | Scientific Researcher
+* 📧 **Email:** [wisrovi.rodriguez@gmail.com](mailto:wisrovi.rodriguez@gmail.com) / [wisrovi@wisrovi.dev](mailto:wisrovi@wisrovi.dev)
+* 🌐 **Portal Oficial:** [wisrovi.dev](https://wisrovi.dev)
+* 💼 **LinkedIn:** [wisrovi-rodriguez](https://www.linkedin.com/in/wisrovi-rodriguez/)
+* 🆔 **ORCID:** [0009-0005-0710-1861](https://orcid.org/0009-0005-0710-1861)
+* 📦 **PyPI:** [pypi.org/user/wisrovi/](https://pypi.org/user/wisrovi/)
+* 🐙 **GitHub:** [@wisrovi](https://github.com/wisrovi)
